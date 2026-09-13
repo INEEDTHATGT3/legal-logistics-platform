@@ -8,13 +8,22 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import type { User, UserRole } from "@/lib/types";
-import { THEME_COOKIE, type Theme } from "@/lib/theme";
+import type { Theme } from "@/lib/theme";
+import {
+  hydrateDemoStore,
+  selectPersona,
+  toggleTheme,
+  useDemoUser,
+  useTheme,
+} from "@/lib/demo-store";
 
 // ── Context Shape ────────────────────────────────────────────────────
 interface RoleContextValue {
   role: UserRole;
   currentUser: User;
+  switchPersona: (persona: UserRole) => void;
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
   theme: Theme;
@@ -23,40 +32,60 @@ interface RoleContextValue {
 
 const RoleContext = createContext<RoleContextValue | null>(null);
 
+/**
+ * The URL is the single source of truth for which persona is active, so
+ * a direct link to `/dashboard/admin/` lands in the right dashboard on a
+ * cold load — which matters once the site is a set of static files with
+ * no server to redirect.
+ */
+function personaFromPath(pathname: string | null): UserRole {
+  const match = pathname?.match(/\/dashboard\/(client|lawyer|admin)\b/);
+  return (match?.[1] as UserRole | undefined) ?? "client";
+}
+
 // ── Provider ─────────────────────────────────────────────────────────
-export function RoleProvider({
-  children,
-  initialUser,
-  initialTheme,
-}: {
-  children: ReactNode;
-  initialUser: User;
-  initialTheme: Theme;
-}) {
+export function RoleProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const role = personaFromPath(usePathname());
+  const currentUser = useDemoUser(role);
+  // Theme lives in the demo store rather than component state: it is
+  // really browser state (an <html> class plus localStorage) that the
+  // inline script in the root layout applies before React mounts.
+  const theme = useTheme();
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [theme, setTheme] = useState<Theme>(initialTheme);
+
+  // Pulls the saved scenario and theme out of localStorage — neither can
+  // be read during render on a statically exported page.
+  useEffect(() => {
+    hydrateDemoStore();
+  }, []);
+
+  // Keep the store aligned with the route, so the mutations in
+  // `lib/demo-reducers.ts` apply the right role guard.
+  useEffect(() => {
+    selectPersona(role);
+  }, [role]);
 
   const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => !prev);
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  }, []);
-
-  // Push the choice out to the two external systems that hold it: the
-  // <html> class Tailwind reads, and the cookie the server reads on the
-  // next request.
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.cookie = `${THEME_COOKIE}=${theme}; path=/; max-age=31536000; SameSite=Lax`;
-  }, [theme]);
+  // Navigating is the switch: the route change re-runs the effect above
+  // and the whole dashboard follows.
+  const switchPersona = useCallback(
+    (persona: UserRole) => {
+      router.push(`/dashboard/${persona}`);
+    },
+    [router]
+  );
 
   return (
     <RoleContext.Provider
       value={{
-        role: initialUser.role,
-        currentUser: initialUser,
+        role,
+        currentUser,
+        switchPersona,
         sidebarCollapsed,
         toggleSidebar,
         theme,

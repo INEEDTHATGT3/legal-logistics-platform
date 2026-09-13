@@ -1,16 +1,17 @@
 "use client"
 
-import { useTransition } from "react"
+import { useState } from "react"
 import { useRole } from "@/components/dashboard/role-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { LogOut, Moon, Sun } from "lucide-react"
+import { Moon, RotateCcw, Sun } from "lucide-react"
 import type { UserRole } from "@/lib/types"
+import { DEMO_PERSONAS } from "@/lib/demo-data"
+import { resetDemo } from "@/lib/demo-store"
 import { getInitials } from "@/lib/format"
-import { signOut } from "@/app/auth/actions"
 
 const PAGE_TITLES: Record<UserRole, string> = {
   client: "Client Dashboard",
@@ -18,31 +19,57 @@ const PAGE_TITLES: Record<UserRole, string> = {
   admin: "Admin Control Panel",
 }
 
-export function DashboardTopbar() {
-  const { role, currentUser, theme, toggleTheme } = useRole()
-  const [isSigningOut, startTransition] = useTransition()
+const PERSONA_ORDER: UserRole[] = ["client", "lawyer", "admin"]
 
-  // Signing out server-side clears the httpOnly auth cookies that the
-  // browser client cannot reach.
-  const handleSignOut = () => {
-    startTransition(async () => {
-      await signOut()
-    })
+export function DashboardTopbar() {
+  const { role, currentUser, switchPersona, theme, toggleTheme } = useRole()
+  const [justReset, setJustReset] = useState(false)
+
+  // Drops every booking, note, and status change made during the last
+  // run-through and restores the seeded scenario.
+  const handleReset = () => {
+    resetDemo()
+    setJustReset(true)
+    window.setTimeout(() => setJustReset(false), 2000)
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-6">
-      <h1 className="font-heading text-lg font-semibold">{PAGE_TITLES[role]}</h1>
-
-      <div className="flex items-center gap-3">
+    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-4 sm:px-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <h1 className="truncate font-heading text-lg font-semibold">
+          {PAGE_TITLES[role]}
+        </h1>
         <Badge
-          variant={role === "admin" ? "destructive" : role === "lawyer" ? "default" : "secondary"}
-          className="hidden text-[10px] uppercase sm:inline-flex"
+          variant="outline"
+          className="hidden shrink-0 text-[10px] uppercase tracking-wider lg:inline-flex"
         >
-          {role}
+          Demo Mode
         </Badge>
+      </div>
 
-        <Separator orientation="vertical" className="h-6" />
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* The persona switcher. Each button is a route, so the browser
+            back button walks the demo in reverse. */}
+        <div
+          className="flex items-center rounded-lg border border-border p-0.5"
+          role="group"
+          aria-label="Switch demo persona"
+        >
+          {PERSONA_ORDER.map((persona) => (
+            <Button
+              key={persona}
+              variant={persona === role ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => switchPersona(persona)}
+              aria-current={persona === role ? "true" : undefined}
+              className="h-7 px-2 text-xs capitalize sm:px-3"
+            >
+              {persona}
+            </Button>
+          ))}
+        </div>
+
+        <Separator orientation="vertical" className="hidden h-6 sm:block" />
 
         <Tooltip>
           <TooltipTrigger
@@ -69,25 +96,28 @@ export function DashboardTopbar() {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                onClick={handleSignOut}
-                disabled={isSigningOut}
-                aria-label="Sign out"
+                onClick={handleReset}
+                aria-label="Reset the demo scenario"
                 className="text-muted-foreground hover:text-foreground"
               />
             }
           >
-            <LogOut className="h-4 w-4" />
+            <RotateCcw className="h-4 w-4" />
           </TooltipTrigger>
-          <TooltipContent>Sign out</TooltipContent>
+          <TooltipContent>
+            {justReset ? "Demo reset" : "Reset demo"}
+          </TooltipContent>
         </Tooltip>
 
-        <Separator orientation="vertical" className="h-6" />
+        <Separator orientation="vertical" className="hidden h-6 sm:block" />
 
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
           </Avatar>
-          <span className="hidden text-sm font-medium sm:inline">{currentUser.name}</span>
+          <span className="hidden text-sm font-medium md:inline">
+            {DEMO_PERSONAS[role].label}
+          </span>
         </div>
       </div>
     </header>

@@ -47,7 +47,7 @@ import {
   type Delivery,
   type LawyerWithUser,
 } from "@/lib/types";
-import { bookConsultation, requestDelivery } from "@/app/actions";
+import { bookConsultation, requestDelivery } from "@/lib/demo-store";
 import { formatDateTime, formatINR, getInitials } from "@/lib/format";
 
 interface ClientDashboardViewProps {

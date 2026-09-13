@@ -49,7 +49,7 @@ import {
   updateConsultationStatus,
   updateHourlyRate,
   updateSpecialty,
-} from "@/app/actions";
+} from "@/lib/demo-store";
 import { formatDateTime, formatINR } from "@/lib/format";
 
 interface LawyerDashboardViewProps {
@@ -85,9 +85,9 @@ export function LawyerDashboardView({
 
       {!profile && (
         <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          Your lawyer profile row is missing, so you will not appear in the client
-          directory. Run <code>supabase/schema.sql</code> in the Supabase SQL Editor —
-          it backfills a default profile for every lawyer.
+          This persona has no lawyer profile in the demo scenario, so it will not
+          appear in the client directory. Reset the demo from the topbar to restore
+          the seeded profiles.
         </p>
       )}
 

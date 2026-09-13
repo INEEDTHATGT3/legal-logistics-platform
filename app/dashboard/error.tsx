@@ -24,11 +24,9 @@ export default function DashboardError({
         </h1>
 
         <p className="text-sm text-muted-foreground">
-          If this is a fresh Supabase project, run{" "}
-          <code className="rounded bg-muted px-1 py-0.5 text-xs">
-            supabase/schema.sql
-          </code>{" "}
-          in the SQL Editor to create the tables, policies and sign-up trigger.
+          This is a self-contained demo — all of its data lives in this
+          browser. Resetting the demo from the topbar, or clearing site data,
+          clears a corrupted scenario.
         </p>
 
         <p className="text-sm text-destructive">{error.message}</p>

@@ -32,7 +32,7 @@ import {
   type DeliveryTrackingStatus,
   type DeliveryWithClient,
 } from "@/lib/types";
-import { updateDeliveryStatus } from "@/app/actions";
+import { updateDeliveryStatus } from "@/lib/demo-store";
 import { formatDateTime } from "@/lib/format";
 
 interface AdminDashboardViewProps {

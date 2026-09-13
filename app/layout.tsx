@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { Geist, Geist_Mono, Noto_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { THEME_COOKIE, parseTheme } from "@/lib/theme";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
 
 const playfairDisplayHeading = Playfair_Display({
   subsets: ["latin"],
@@ -28,13 +27,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "NyaySetu — Legal Consultation & Logistics",
   description:
-    "Unified platform connecting clients to lawyers for virtual consultations, with a physical logistics network for document delivery.",
+    "Interactive prototype connecting clients to lawyers for virtual consultations, with a document logistics network alongside it.",
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Read on the server so the first paint already has the right theme.
-  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+/**
+ * Applies the saved theme before first paint. Without this the page
+ * renders light and snaps to dark once React mounts, because a static
+ * export has no server to read the preference on.
+ */
+const themeScript = `(function(){try{if(localStorage.getItem("${THEME_STORAGE_KEY}")==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})()`;
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
@@ -45,10 +48,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         geistMono.variable,
         "font-sans",
         notoSans.variable,
-        playfairDisplayHeading.variable,
-        theme === "dark" && "dark"
+        playfairDisplayHeading.variable
       )}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

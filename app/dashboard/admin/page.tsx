@@ -1,22 +1,16 @@
-import { createClient } from "@/lib/supabase/server";
-import { requireRole } from "@/lib/auth";
-import type { DeliveryWithClient } from "@/lib/types";
+"use client";
+
+import { selectAllDeliveries, useDemoReady, useDemoState } from "@/lib/demo-store";
+import { DashboardSkeleton } from "@/components/demo/dashboard-skeleton";
 import { AdminDashboardView } from "./admin-view";
 
-export default async function AdminDashboardPage() {
-  await requireRole("admin");
-  const supabase = await createClient();
+export default function AdminDashboardPage() {
+  const ready = useDemoReady();
+  const demo = useDemoState();
 
-  // RLS lets an admin read every delivery; a client only ever sees their own.
-  const { data, error } = await supabase
-    .from("deliveries")
-    .select("*, client:client_id(uid, name, email, role)")
-    .order("created_at", { ascending: false });
+  if (!ready) return <DashboardSkeleton />;
 
   return (
-    <AdminDashboardView
-      deliveries={(data ?? []) as unknown as DeliveryWithClient[]}
-      loadError={error?.message ?? null}
-    />
+    <AdminDashboardView deliveries={selectAllDeliveries(demo)} loadError={null} />
   );
 }

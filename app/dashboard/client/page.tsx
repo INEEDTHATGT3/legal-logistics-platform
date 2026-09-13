@@ -1,52 +1,30 @@
-import { createClient } from "@/lib/supabase/server";
-import { requireRole } from "@/lib/auth";
-import type {
-  ConsultationWithLawyer,
-  Delivery,
-  LawyerWithUser,
-} from "@/lib/types";
+"use client";
+
+import { DEMO_PERSONAS } from "@/lib/demo-data";
+import {
+  selectClientConsultations,
+  selectClientDeliveries,
+  selectLawyerDirectory,
+  useDemoReady,
+  useDemoState,
+} from "@/lib/demo-store";
+import { DashboardSkeleton } from "@/components/demo/dashboard-skeleton";
 import { ClientDashboardView } from "./client-view";
 
-export default async function ClientDashboardPage() {
-  const user = await requireRole("client");
-  const supabase = await createClient();
+export default function ClientDashboardPage() {
+  const ready = useDemoReady();
+  const demo = useDemoState();
 
-  const [lawyersResult, consultationsResult, deliveriesResult] =
-    await Promise.all([
-      // Directory of every advocate, with their name/email from users.
-      supabase
-        .from("lawyer_profiles")
-        .select("lawyer_id, specialty, hourly_rate, user:lawyer_id(uid, name, email, role)")
-        .order("hourly_rate", { ascending: true }),
+  if (!ready) return <DashboardSkeleton />;
 
-      // My consultations, with the lawyer I booked.
-      supabase
-        .from("consultations")
-        .select("*, lawyer:lawyer_id(uid, name, email, role)")
-        .eq("client_id", user.uid)
-        .order("scheduled_at", { ascending: true }),
-
-      // My deliveries, newest first.
-      supabase
-        .from("deliveries")
-        .select("*")
-        .eq("client_id", user.uid)
-        .order("created_at", { ascending: false }),
-    ]);
+  const clientId = DEMO_PERSONAS.client.uid;
 
   return (
     <ClientDashboardView
-      lawyers={(lawyersResult.data ?? []) as unknown as LawyerWithUser[]}
-      consultations={
-        (consultationsResult.data ?? []) as unknown as ConsultationWithLawyer[]
-      }
-      deliveries={(deliveriesResult.data ?? []) as Delivery[]}
-      loadError={
-        lawyersResult.error?.message ??
-        consultationsResult.error?.message ??
-        deliveriesResult.error?.message ??
-        null
-      }
+      lawyers={selectLawyerDirectory(demo)}
+      consultations={selectClientConsultations(demo, clientId)}
+      deliveries={selectClientDeliveries(demo, clientId)}
+      loadError={null}
     />
   );
 }

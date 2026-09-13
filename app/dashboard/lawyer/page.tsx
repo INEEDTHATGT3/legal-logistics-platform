@@ -1,35 +1,28 @@
-import { createClient } from "@/lib/supabase/server";
-import { requireRole } from "@/lib/auth";
-import type { ConsultationWithClient, LawyerProfile } from "@/lib/types";
+"use client";
+
+import { DEMO_PERSONAS } from "@/lib/demo-data";
+import {
+  selectLawyerConsultations,
+  selectLawyerProfile,
+  useDemoReady,
+  useDemoState,
+} from "@/lib/demo-store";
+import { DashboardSkeleton } from "@/components/demo/dashboard-skeleton";
 import { LawyerDashboardView } from "./lawyer-view";
 
-export default async function LawyerDashboardPage() {
-  const user = await requireRole("lawyer");
-  const supabase = await createClient();
+export default function LawyerDashboardPage() {
+  const ready = useDemoReady();
+  const demo = useDemoState();
 
-  const [profileResult, consultationsResult] = await Promise.all([
-    supabase
-      .from("lawyer_profiles")
-      .select("lawyer_id, specialty, hourly_rate")
-      .eq("lawyer_id", user.uid)
-      .maybeSingle(),
+  if (!ready) return <DashboardSkeleton />;
 
-    supabase
-      .from("consultations")
-      .select("*, client:client_id(uid, name, email, role)")
-      .eq("lawyer_id", user.uid)
-      .order("scheduled_at", { ascending: true }),
-  ]);
+  const lawyerId = DEMO_PERSONAS.lawyer.uid;
 
   return (
     <LawyerDashboardView
-      profile={(profileResult.data as LawyerProfile | null) ?? null}
-      consultations={
-        (consultationsResult.data ?? []) as unknown as ConsultationWithClient[]
-      }
-      loadError={
-        profileResult.error?.message ?? consultationsResult.error?.message ?? null
-      }
+      profile={selectLawyerProfile(demo, lawyerId)}
+      consultations={selectLawyerConsultations(demo, lawyerId)}
+      loadError={null}
     />
   );
 }
