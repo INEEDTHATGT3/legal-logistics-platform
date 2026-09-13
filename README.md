@@ -1,5 +1,15 @@
 # NyaySetu — Legal Consultation & Logistics (Demo Build)
 
+### ▶ [Open the live demo](https://ineedthatgt3.github.io/legal-logistics-platform/)
+
+[![Live demo](https://img.shields.io/badge/live%20demo-ineedthatgt3.github.io-10b981?style=for-the-badge)](https://ineedthatgt3.github.io/legal-logistics-platform/)
+[![Deploy](https://github.com/INEEDTHATGT3/legal-logistics-platform/actions/workflows/deploy.yml/badge.svg)](https://github.com/INEEDTHATGT3/legal-logistics-platform/actions/workflows/deploy.yml)
+
+No sign-in. Pick a persona and click through — the walkthrough panel in the
+bottom-right corner carries the script.
+
+---
+
 An interactive prototype showing how lawyer discovery, virtual consultations,
 and physical document logistics fit into one coordinated experience.
 
