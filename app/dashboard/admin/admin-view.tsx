@@ -18,14 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { CheckCircle, Clock, Package, Search, Truck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCircle, Clock, Package, Search, Truck } from "lucide-react";
 import {
   DELIVERY_STATUS_LABELS,
   DELIVERY_STEPS,
@@ -34,6 +28,8 @@ import {
 } from "@/lib/types";
 import { updateDeliveryStatus } from "@/lib/demo-store";
 import { formatDateTime } from "@/lib/format";
+import { ActivityTicker } from "@/components/demo/activity-ticker";
+import { TractionStrip } from "@/components/demo/traction-strip";
 
 interface AdminDashboardViewProps {
   deliveries: DeliveryWithClient[];
@@ -94,6 +90,8 @@ export function AdminDashboardView({ deliveries, loadError }: AdminDashboardView
         </p>
       )}
 
+      <TractionStrip />
+
       {/* ── Status tallies ────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {DELIVERY_STEPS.map((step) => {
@@ -129,8 +127,9 @@ export function AdminDashboardView({ deliveries, loadError }: AdminDashboardView
         })}
       </div>
 
-      {/* ── Master table ──────────────────────────────────────────── */}
-      <section id="deliveries" className="scroll-mt-6">
+      {/* ── Master table, with the live feed alongside it ─────────── */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <section id="deliveries" className="scroll-mt-6 xl:col-span-2">
         <Card>
           <CardHeader className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -189,6 +188,9 @@ export function AdminDashboardView({ deliveries, loadError }: AdminDashboardView
           </CardContent>
         </Card>
       </section>
+
+        <ActivityTicker />
+      </div>
     </div>
   );
 }
@@ -212,6 +214,9 @@ function StatusBadge({ status }: { status: DeliveryTrackingStatus }) {
 function DeliveryRow({ delivery }: { delivery: DeliveryWithClient }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Undefined once a parcel is delivered — that is the terminal stage.
+  const nextStep = DELIVERY_STEPS[DELIVERY_STEPS.indexOf(delivery.tracking_status) + 1];
 
   const handleStatusChange = (next: DeliveryTrackingStatus) => {
     setError(null);
@@ -243,24 +248,23 @@ function DeliveryRow({ delivery }: { delivery: DeliveryWithClient }) {
         )}
       </TableCell>
       <TableCell>
-        <Select
-          value={delivery.tracking_status}
-          disabled={isPending}
-          onValueChange={(value) => {
-            if (value) handleStatusChange(value as DeliveryTrackingStatus);
-          }}
-        >
-          <SelectTrigger size="sm" className="w-[140px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {DELIVERY_STEPS.map((step) => (
-              <SelectItem key={step} value={step}>
-                {DELIVERY_STATUS_LABELS[step]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* One button, one stage. A dropdown made the presenter hunt for
+            the right option mid-sentence, and offered backwards moves
+            the timeline rejects anyway. */}
+        {nextStep ? (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isPending}
+            onClick={() => handleStatusChange(nextStep)}
+            className="w-[150px] justify-start"
+          >
+            <ArrowRight className="h-4 w-4" />
+            {DELIVERY_STATUS_LABELS[nextStep]}
+          </Button>
+        ) : (
+          <span className="text-xs text-muted-foreground">Complete</span>
+        )}
       </TableCell>
     </TableRow>
   );

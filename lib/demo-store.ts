@@ -172,6 +172,14 @@ export function selectPersona(persona: UserRole): void {
   commit({ ...state, activePersona: persona });
 }
 
+/**
+ * Moves the guided walkthrough. Callers clamp to their own step count;
+ * a negative step is the dismissed state, so this must not clamp at zero.
+ */
+export function setTourStep(step: number): void {
+  commit({ ...state, tourStep: step });
+}
+
 export function toggleTheme(): void {
   theme = theme === "light" ? "dark" : "light";
   document.documentElement.classList.toggle("dark", theme === "dark");
@@ -259,6 +267,22 @@ export function useDemoReady(): boolean {
   return useSyncExternalStore(
     subscribe,
     () => ready,
+    () => false
+  );
+}
+
+const noopSubscribe = () => () => {};
+
+/**
+ * False in the exported HTML and on the first client render, true after.
+ * Lets a component that depends on the browser (stored state, timers)
+ * render nothing until hydration is done, without an effect that would
+ * set state during commit.
+ */
+export function useMounted(): boolean {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
     () => false
   );
 }

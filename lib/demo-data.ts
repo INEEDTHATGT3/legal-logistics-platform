@@ -18,11 +18,39 @@ import type {
 export interface DemoState {
   /** Which persona the presenter is currently driving. */
   activePersona: UserRole;
+  /** How far through the guided walkthrough the presenter is. */
+  tourStep: number;
   users: User[];
   lawyerProfiles: LawyerProfile[];
   consultations: Consultation[];
   deliveries: Delivery[];
 }
+
+/**
+ * Headline numbers for the pitch. Illustrative figures for a network of
+ * this shape — not measured results, and labelled as such wherever they
+ * are shown.
+ */
+export const DEMO_TRACTION = [
+  { label: "Consultations booked", value: "1,284", delta: "+18% MoM" },
+  { label: "Documents moved", value: "3,610", delta: "+24% MoM" },
+  { label: "Cities live", value: "14", delta: "+3 this quarter" },
+  { label: "Median pickup to delivery", value: "31 hrs", delta: "−6 hrs MoM" },
+] as const;
+
+/** Cities the simulated network ticker draws from. */
+export const DEMO_CITIES = [
+  "Bengaluru",
+  "Mumbai",
+  "Pune",
+  "Kochi",
+  "Hyderabad",
+  "Gurugram",
+  "Chennai",
+  "Jaipur",
+  "Kolkata",
+  "Ahmedabad",
+] as const;
 
 /** The persona cards on the entry screen, and the topbar switcher. */
 export const DEMO_PERSONAS: Record<
@@ -213,6 +241,7 @@ const deliveries: Delivery[] = [
 export function createSeed(): DemoState {
   return {
     activePersona: "client",
+    tourStep: 0,
     users: users.map((user) => ({ ...user })),
     lawyerProfiles: lawyerProfiles.map((profile) => ({ ...profile })),
     consultations: consultations.map((consultation) => ({ ...consultation })),

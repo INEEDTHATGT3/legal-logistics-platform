@@ -4,6 +4,7 @@ import { RoleProvider } from "@/components/dashboard/role-context";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { DemoTour, DemoTourReopen } from "@/components/demo/demo-tour";
 
 /**
  * Client-side shell. There is no server on a static export, so the
@@ -29,6 +30,9 @@ export default function DashboardLayout({
             </main>
           </div>
         </div>
+
+        <DemoTour />
+        <DemoTourReopen />
       </TooltipProvider>
     </RoleProvider>
   );

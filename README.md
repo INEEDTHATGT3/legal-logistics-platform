@@ -12,7 +12,8 @@ Stack: Next.js 16 (App Router, static export), React 19, Tailwind v4,
 shadcn/ui on Base UI.
 
 > Nothing here is real legal advice, a real courier network, or real customer
-> data. Every name, address, and case note is synthetic.
+> data. Every name, address, case note and figure is synthetic, and the
+> on-screen numbers are labelled `Illustrative` and `Simulated`.
 
 ---
 
@@ -31,27 +32,32 @@ To run the exact bundle that gets deployed:
 pnpm preview
 ```
 
-That builds the static export into `out/` and serves it at http://localhost:3000.
-Useful before a pitch: it works with the network unplugged.
+That builds the static export into `out/` and serves it. Works with the
+network unplugged — worth confirming before a pitch.
 
 ---
 
-## The demo story
+## Presenting
 
-1. Land on the entry screen and pick a persona.
-2. **Client** — browse the advocate directory, search and filter it.
-3. Book a consultation from a lawyer card.
-4. Request a document delivery and watch the tracking timeline appear.
-5. Switch to **Admin** — move that delivery down the timeline.
-6. Switch back to **Client** — the tracker reflects the new stage.
-7. Switch to **Lawyer** — add private case notes, mark a consultation complete.
-8. Watch the practice metrics update.
-9. Hit **Reset demo** in the topbar to restore the seeded scenario for the
-   next run-through.
+The app carries its own script. A **walkthrough panel** sits bottom-right with
+eight steps: what to do on screen, and the point to make while doing it.
+`Next` moves the step *and* switches to the persona that step belongs to, so
+you cannot lose your place mid-sentence. Dismiss it with `×`; reopen from the
+`Walkthrough` button.
 
-Personas are: Aarav Sharma (client), Adv. Meera Iyer (lawyer), and NyaySetu
-Operations (admin). The topbar switches between them, and each is its own URL,
-so the browser back button walks the demo in reverse.
+Before each run-through, press **Reset demo** in the topbar. It restores the
+seeded scenario and returns the walkthrough to step one.
+
+Three things to point at, in order:
+
+1. **Landing** — the thesis and the scale numbers, before anyone clicks.
+2. **Client → Admin → Client** — the loop that closes. Book, request a
+   delivery, advance it as ops, come back and see it moved. This is the demo.
+3. **Lawyer** — the supply side, and the second revenue line.
+
+Personas are Aarav Sharma (client), Adv. Meera Iyer (lawyer), and NyaySetu
+Operations (admin). Each is its own URL, so the browser back button walks the
+demo in reverse, and a direct link drops you into any screen cold.
 
 State survives a refresh — it lives in `localStorage` under `nyaysetu-demo-v1`.
 
@@ -61,9 +67,10 @@ State survives a refresh — it lives in `localStorage` under `nyaysetu-demo-v1`
 
 | Path | Role |
 |---|---|
-| `lib/demo-data.ts` | The seeded scenario: people, profiles, consultations, deliveries. |
+| `lib/demo-data.ts` | The seeded scenario, plus the headline figures and the ticker vocabulary. |
 | `lib/demo-reducers.ts` | Every state transition, as pure functions. All the rules live here. |
 | `lib/demo-store.ts` | Module-level store, `localStorage` persistence, and the React hooks. |
+| `components/demo/` | Walkthrough panel, activity ticker, traction strip, loading skeleton. |
 | `app/dashboard/*/\*-view.tsx` | The three dashboards. They call the store exactly as they once called server actions. |
 
 Run the rules check with:

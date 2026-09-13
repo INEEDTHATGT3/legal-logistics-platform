@@ -1,1 +1,0 @@
-Use the existing /app/dashboard/layout.tsx file. Do not invent new CSS structures. Rely solely on the installed shadcn/ui components.
